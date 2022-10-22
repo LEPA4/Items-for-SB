@@ -1,0 +1,4 @@
+name: Skyblock-Items
+version: '${project.version}'
+main: sbitems.skyblockitems.SkyblockItems
+api-version: 1.19
