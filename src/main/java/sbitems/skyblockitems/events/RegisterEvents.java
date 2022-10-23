@@ -1,24 +1,16 @@
 package sbitems.skyblockitems.events;
 
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import sbitems.skyblockitems.items.ItemManager;
 
 public class RegisterEvents implements Listener {
-
-    private static int getIfEmpty(Inventory inv){
-        for(int i = 0; i < inv.getStorageContents().length; i++){
-            if(inv.getItem(i) == null)
-                return i;
-        }
-        return -1;
-    }
 
     @EventHandler
     public static void PJ(PlayerJoinEvent e){
@@ -30,40 +22,36 @@ public class RegisterEvents implements Listener {
         if(!(e.getEntity() instanceof Player))return;
         Player p = (Player) e.getEntity();
 
+        if(p.getGameMode() != GameMode.SURVIVAL) return;
+
         ItemStack inItem = e.getItem().getItemStack();
+
         int inIAmt = inItem.getAmount();
         int leftAmt = inIAmt;
         ItemStack inItemRef = inItem.clone();
         inItemRef.setAmount(1);
+        if(!ItemManager.CustomItemsName.containsKey(inItemRef)) return;
         Integer maxStack = ItemManager.CustomItemsStackSize.get(inItemRef);
 
-        boolean hadOne = false;
+        boolean hadOne = p.getInventory().contains(inItem);
         boolean canFit = false;
 
-        for(ItemStack itemStack : p.getInventory()){
+        for(ItemStack itemStack : p.getInventory().getStorageContents()){
             if(itemStack == null || itemStack.getType().equals(Material.AIR)) continue;
-            if(itemStack.isSimilar(e.getItem().getItemStack())){hadOne = true;}
             if(itemStack.getAmount() < maxStack){canFit = true;}
         }
 
-        for (ItemStack itemStack : p.getInventory()){
-            if((itemStack == null || itemStack.getType().equals(Material.AIR)) && hadOne) continue;
+        for (ItemStack itemStack : p.getInventory().getStorageContents()){
+            if(itemStack == null && hadOne) continue;
 
             if(!hadOne || itemStack.isSimilar(e.getItem().getItemStack())){
-                int emptySlot = getIfEmpty(p.getInventory());
-                if(emptySlot == -1) {
-                    e.setCancelled(true);
-                    return;
-                }
-
                 e.setCancelled(true);
 
                 boolean gotten = false;
 
-                for(int i = 0; i <= inIAmt+1; i++){
-                    if(emptySlot == -1){
-                        break;
-                    }
+                while(leftAmt > 0){
+                    int emptySlot = p.getInventory().firstEmpty();
+                    if(emptySlot == -1) break;
                     ItemStack newItem = inItem.clone();
 
                     if(hadOne && (itemStack.getAmount() < maxStack)){
@@ -89,7 +77,6 @@ public class RegisterEvents implements Listener {
                         }
                     }
 
-                    if(leftAmt <= 0) break;
                     if(leftAmt-maxStack <= 0){
                         newItem.setAmount(leftAmt);
                     }else{
@@ -97,18 +84,15 @@ public class RegisterEvents implements Listener {
                     }
 
                     p.getInventory().setItem(emptySlot, newItem);
-                    leftAmt -= maxStack;
-                    if(leftAmt <= 0) break;
 
-                    emptySlot = getIfEmpty(p.getInventory());
+                    leftAmt -= maxStack;
                 }
+
                 if(leftAmt <= 0) {
                     e.getItem().remove();
                     return;
                 }
-                if(emptySlot == -1){
-                    break;
-                }
+                break;
             }
         }
 
