@@ -10,12 +10,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import sbitems.skyblockitems.items.ItemManager;
 
-import java.util.List;
-
 public class RegisterEvents implements Listener {
 
     private static int getIfEmpty(Inventory inv){
-        for(int i = 0; i < inv.toString().length(); i++){
+        for(int i = 0; i < inv.getStorageContents().length; i++){
             if(inv.getItem(i) == null)
                 return i;
         }
@@ -32,30 +30,66 @@ public class RegisterEvents implements Listener {
         if(!(e.getEntity() instanceof Player))return;
         Player p = (Player) e.getEntity();
 
-        for (ItemStack itemStack : p.getInventory()){
-            if(itemStack == null || itemStack.getType().equals(Material.AIR)) return;
+        ItemStack inItem = e.getItem().getItemStack();
+        int inIAmt = inItem.getAmount();
+        int leftAmt = inIAmt;
+        ItemStack inItemRef = inItem.clone();
+        inItemRef.setAmount(1);
+        Integer maxStack = ItemManager.CustomItemsStackSize.get(inItemRef);
 
-            if(itemStack.isSimilar(e.getItem().getItemStack())){
+        boolean hadOne = false;
+        boolean canFit = false;
+
+        for(ItemStack itemStack : p.getInventory()){
+            if(itemStack == null || itemStack.getType().equals(Material.AIR)) continue;
+            if(itemStack.isSimilar(e.getItem().getItemStack())){hadOne = true;}
+            if(itemStack.getAmount() < maxStack){canFit = true;}
+        }
+
+        for (ItemStack itemStack : p.getInventory()){
+            if((itemStack == null || itemStack.getType().equals(Material.AIR)) && hadOne) continue;
+
+            if(!hadOne || itemStack.isSimilar(e.getItem().getItemStack())){
                 int emptySlot = getIfEmpty(p.getInventory());
                 if(emptySlot == -1) {
                     e.setCancelled(true);
                     return;
                 }
-                ItemStack inItem = e.getItem().getItemStack();
-                int inIAmt = inItem.getAmount();
-                ItemStack inItemRef = inItem.clone();
-                inItemRef.setAmount(1);
 
                 e.setCancelled(true);
-                e.getItem().remove();
 
-                Integer maxStack = ItemManager.CustomItemsStackSize.get(inItemRef);
+                boolean gotten = false;
 
-                int leftAmt = inIAmt;
-
-                for(int i = 0; i < Math.floor(inIAmt/maxStack); i++){
+                for(int i = 0; i < inIAmt; i++){
+                    if(emptySlot == -1){
+                        break;
+                    }
                     ItemStack newItem = inItem.clone();
 
+                    if(hadOne && (itemStack.getAmount() < maxStack)){
+                        int needs = maxStack- itemStack.getAmount();
+
+                        if(inIAmt - needs >= 0) itemStack.setAmount(maxStack);
+                        else itemStack.setAmount(itemStack.getAmount()+inIAmt);
+                        leftAmt -= needs;
+                        gotten = true;
+                    }
+
+                    if(hadOne && canFit && !gotten){
+                        for(ItemStack itemStack1 : p.getInventory()){
+                            if(itemStack1 == null || itemStack1.getType().equals(Material.AIR)) continue;
+                            if(itemStack1.getAmount() < maxStack){
+                                int needs = maxStack- itemStack1.getAmount();
+
+                                if(inIAmt - needs >= 0) itemStack1.setAmount(maxStack);
+                                else itemStack1.setAmount(itemStack1.getAmount()+inIAmt);
+                                leftAmt -= needs;
+                                break;
+                            }
+                        }
+                    }
+
+                    if(leftAmt <= 0) break;
                     if(leftAmt-maxStack <= 0){
                         newItem.setAmount(leftAmt);
                     }else{
@@ -64,12 +98,21 @@ public class RegisterEvents implements Listener {
 
                     p.getInventory().setItem(emptySlot, newItem);
                     leftAmt -= maxStack;
+                    if(leftAmt <= 0) break;
 
                     emptySlot = getIfEmpty(p.getInventory());
                 }
-
-                if(leftAmt <= 0) break;
+                if(leftAmt <= 0) {
+                    e.getItem().remove();
+                    return;
+                }
+                if(emptySlot == -1){
+                    break;
+                }
             }
         }
+
+        e.getItem().getItemStack().setAmount(leftAmt);
+        e.getItem().setItemStack(e.getItem().getItemStack());
     }
 }
