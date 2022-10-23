@@ -60,7 +60,7 @@ public class RegisterEvents implements Listener {
 
                 boolean gotten = false;
 
-                for(int i = 0; i < inIAmt; i++){
+                for(int i = 0; i <= inIAmt+1; i++){
                     if(emptySlot == -1){
                         break;
                     }
