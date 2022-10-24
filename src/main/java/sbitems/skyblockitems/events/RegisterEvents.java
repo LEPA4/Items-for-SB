@@ -124,6 +124,8 @@ public class RegisterEvents implements Listener {
 
     @EventHandler (priority = EventPriority.HIGHEST)
     public static void PID (InventoryDragEvent e){
+        if(e.getWhoClicked().getGameMode() == GameMode.CREATIVE) return;
+
         ItemStack inItem = e.getOldCursor();
         ItemStack inItemRef = inItem.clone();
         inItemRef.setAmount(1);

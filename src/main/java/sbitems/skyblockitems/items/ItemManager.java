@@ -3,6 +3,7 @@ package sbitems.skyblockitems.items;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +11,11 @@ public class ItemManager {
 
     public static void init(){
         CreateItem createItem = new CreateItem();
-        addItem("Wand", createItem.MakeItem("Wand", Material.ARROW), 4);
+        ArrayList<String> lore = new ArrayList<>();
+        lore.add("Test lore");
+
+        addItem("Wand", createItem.MakeItem("Wand", Material.ARROW, 1, null), 4);
+        lore.clear();
     }
 
     public static Map<String, ItemStack> CustomItems = new HashMap<>();
