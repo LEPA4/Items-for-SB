@@ -10,7 +10,7 @@ public class ItemManager {
 
     public static void init(){
         CreateItem createItem = new CreateItem();
-        addItem("Wand", createItem.MakeItem("Wand", Material.ARROW), 1);
+        addItem("Wand", createItem.MakeItem("Wand", Material.ARROW), 4);
     }
 
     public static Map<String, ItemStack> CustomItems = new HashMap<>();
