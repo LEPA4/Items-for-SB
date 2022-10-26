@@ -228,8 +228,6 @@ public class RegisterEvents implements Listener {
 
     @EventHandler
     public static void PlayerConsume (PlayerItemConsumeEvent e){
-        e.getPlayer().sendMessage(ItemManager.FoodEffect.toString());
-
         ItemStack itemIn = e.getPlayer().getInventory().getItemInMainHand();
 
         ItemStack item = itemIn.clone();
@@ -245,11 +243,9 @@ public class RegisterEvents implements Listener {
             p.setFoodLevel(Math.min(playerHunger + ItemManager.FoodBars.get(item), 20));
             p.setSaturation(playerSaturation + ItemManager.FoodSaturation.get(item));
 
-            if(ItemManager.FoodEffect.containsKey(item)){
-                p.sendMessage("test");
-                p.sendMessage(ItemManager.FoodEffect.get(item).toString());
+            if(ItemManager.FoodEffect.containsKey(item))
                 p.addPotionEffects(ItemManager.FoodEffect.get(item));
-            }
+
 
 
             itemIn.setAmount(itemIn.getAmount()-1);

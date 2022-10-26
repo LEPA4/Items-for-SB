@@ -22,13 +22,11 @@ public class ItemManager {
     public static void init(){
         CreateItem createItem = new CreateItem();
         ArrayList<PotionEffect> lore = new ArrayList<>();
-        PotionEffect potionEffect = new PotionEffect(PotionEffectType.SPEED, 15, 7);
+        PotionEffect potionEffect = new PotionEffect(PotionEffectType.SPEED, 15*20, 7);
         lore.add(potionEffect);
 
         addItem("Wand", createItem.MakeItem("Wand", Material.ARROW, 1, null), 1);
         addItem("Bacon", createItem.FoodItem(createItem.MakeItem("Bacon", Material.PORKCHOP, 2, null), 9, 9, lore), null);
-
-        lore.clear();
     }
 
     public static void addItem(String name, ItemStack item, Integer maxStack){
