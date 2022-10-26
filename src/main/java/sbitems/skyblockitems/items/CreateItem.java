@@ -12,6 +12,7 @@ import java.util.ArrayList;
 public class CreateItem {
 
     public ItemStack MakeItem(String name, Material material, Integer modelData, @Nullable ArrayList<String> lore){
+        // Creates the item and returns it
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(ChatColor.WHITE + name);
@@ -25,6 +26,7 @@ public class CreateItem {
     }
 
     public ItemStack FoodItem(ItemStack item, Integer saturation, Integer hunger, @Nullable ArrayList<PotionEffect> effects){
+        // Adds the food values to the list and returns the newly created item
         if(effects != null)
             if(!ItemManager.FoodEffect.containsKey(item))
                 ItemManager.FoodEffect.put(item, effects);

@@ -25,11 +25,13 @@ public class ItemManager {
         PotionEffect potionEffect = new PotionEffect(PotionEffectType.SPEED, 15*20, 7);
         lore.add(potionEffect);
 
+        // Adds items, i dont know what to say abt this
         addItem("Wand", createItem.MakeItem("Wand", Material.ARROW, 1, null), 1);
         addItem("Bacon", createItem.FoodItem(createItem.MakeItem("Bacon", Material.PORKCHOP, 2, null), 9, 9, lore), null);
     }
 
     public static void addItem(String name, ItemStack item, Integer maxStack){
+        // Adds the item to maps
         CustomItems.put(name, item);
         CustomItemsName.put(item, name);
         if(maxStack != null)

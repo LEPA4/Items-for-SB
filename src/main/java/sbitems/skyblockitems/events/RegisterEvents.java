@@ -23,18 +23,22 @@ public class RegisterEvents implements Listener {
 
     @EventHandler
     public static void PlayerJoin(PlayerJoinEvent e){
+        //Adds item to player inventory when they join
         e.getPlayer().getInventory().addItem(ItemManager.CustomItems.get("Bacon"));
     }
 
     @EventHandler
     public static void PlayerPickupEvent(EntityPickupItemEvent e){
+        // Makes sure the entity picking smth up is a player and creates a variable for player.
         if(!(e.getEntity() instanceof Player))return;
         Player p = (Player) e.getEntity();
 
+        // Checks if game mode is creative bc everything breaks when it is
         if(p.getGameMode() == GameMode.CREATIVE) return;
 
         ItemStack inItem = e.getItem().getItemStack();
 
+        // Sets the items and the amount. inItemRef is just a way to check if it exists in the maps.
         int inIAmt = inItem.getAmount();
         int leftAmt = inIAmt;
         ItemStack inItemRef = inItem.clone();
@@ -47,6 +51,7 @@ public class RegisterEvents implements Listener {
 
         for(ItemStack itemStack : p.getInventory().getStorageContents()){
             if(itemStack == null || itemStack.getType().equals(Material.AIR)) continue;
+            // If there is an available slot for the item to add to, it lets the programme know
             if(itemStack.getAmount() < maxStack){canFit = true;}
         }
 
@@ -64,15 +69,15 @@ public class RegisterEvents implements Listener {
                     ItemStack newItem = inItem.clone();
 
                     if(hadOne && (itemStack.getAmount() < maxStack)){
-                        int needs = maxStack- itemStack.getAmount();
+                        int needs = maxStack- itemStack.getAmount(); // How much it needs to make it max stack
 
-                        if(inIAmt - needs >= 0) itemStack.setAmount(maxStack);
-                        else itemStack.setAmount(itemStack.getAmount()+inIAmt);
-                        leftAmt -= needs;
+                        if(inIAmt - needs >= 0) itemStack.setAmount(maxStack); // Checks if there is the "Perfect" amount going in, if so, sets it to max stack.
+                        else itemStack.setAmount(itemStack.getAmount()+inIAmt); // If it is not perfect, add them
+                        leftAmt -= needs; // Remove what it took.
                         gotten = true;
                     }
 
-                    if(hadOne && canFit && !gotten){
+                    if(hadOne && canFit && !gotten){ // Does the same thing as above but for a different item stack
                         for(ItemStack itemStack1 : p.getInventory()){
                             if(itemStack1 == null || itemStack1.getType().equals(Material.AIR)) continue;
                             if(itemStack1.getAmount() < maxStack){
@@ -86,6 +91,7 @@ public class RegisterEvents implements Listener {
                         }
                     }
 
+                    // Pretty self-explanatory, sets the amount of the in item to see what they should be.
                     if(leftAmt-maxStack <= 0){
                         newItem.setAmount(leftAmt);
                     }else{
@@ -98,6 +104,7 @@ public class RegisterEvents implements Listener {
                 }
 
                 if(leftAmt <= 0) {
+                    // If there is no more of the item, remove it from the world.
                     e.getItem().remove();
                     return;
                 }
@@ -105,12 +112,14 @@ public class RegisterEvents implements Listener {
             }
         }
 
+        // Sets the item stacks.
         e.getItem().getItemStack().setAmount(leftAmt);
         e.getItem().setItemStack(e.getItem().getItemStack());
     }
 
 
     public static int NextOpen(Inventory inv, ItemStack item, int maxStack, int omitSlot){
+        // Finds the next open slot
         for(int i = 0; i < inv.getStorageContents().length; i++){
             if(inv.getItem(i) == null) continue;
             if(Objects.requireNonNull(inv.getItem(i)).isSimilar(item)){
@@ -125,6 +134,7 @@ public class RegisterEvents implements Listener {
 
     @EventHandler (priority = EventPriority.HIGHEST)
     public static void PlayerInventoryDrag (InventoryDragEvent e){
+        // Cancels the event because I'm too lazy to write the code for it at the moment.
         if(e.getWhoClicked().getGameMode() == GameMode.CREATIVE) return;
 
         ItemStack inItem = e.getOldCursor();
@@ -142,6 +152,7 @@ public class RegisterEvents implements Listener {
 
         if(inv == null) return;
 
+        // Stuff breaks in the following two scenarios
         if(inv.getType() == InventoryType.BREWING) return;
 
         if(p.getGameMode() == GameMode.CREATIVE) return;
@@ -156,6 +167,7 @@ public class RegisterEvents implements Listener {
 
         ClickType type = e.getClick();
 
+        // Checks if the item has a max stack size defined by plugin - this is for shift clicking because it kept making errors
         if(maxStack == null) {
             ItemStack clickStack = p.getInventory().getItem(e.getSlot());
             if(clickStack == null) return;
@@ -165,33 +177,36 @@ public class RegisterEvents implements Listener {
             Integer clickStackE = ItemManager.CustomItemsStackSize.get(clickStackR);
 
             if(type == ClickType.CONTROL_DROP) return;
+            // Stops double click because I'm too lazy to do that as well
             if(type == ClickType.DOUBLE_CLICK && clickStackE != null) {e.setCancelled(true);return;}
             if(type.isShiftClick() && clickStackE != null) {
                 e.setCancelled(true);
 
                 int amtLeft = clickStack.getAmount();
 
-                    int nextOpen = NextOpen(p.getInventory(), clickStackR, clickStackE, e.getSlot());
-                    if (nextOpen == -1) return;
+                // Gets the next available slot for it to go in -- not including itself
+                int nextOpen = NextOpen(p.getInventory(), clickStackR, clickStackE, e.getSlot());
+                if (nextOpen == -1) return;
 
-                    ItemStack targItem = p.getInventory().getItem(nextOpen);
+                ItemStack targItem = p.getInventory().getItem(nextOpen);
 
-                    if(targItem == null) return;
+                if(targItem == null) return;
 
-                    int tIA = targItem.getAmount();
+                int tIA = targItem.getAmount();
 
-                    if(tIA + amtLeft <= clickStackE){
-                        clickStackR.setAmount(tIA + amtLeft);
-                        inv.setItem(nextOpen, clickStackR);
-                        inv.clear(e.getSlot());
-                    }else if(tIA + amtLeft > clickStackE){
-                        amtLeft = tIA + amtLeft;
-                        clickStackR.setAmount(clickStackE);
-                        amtLeft -= clickStackE;
-                        inv.setItem(nextOpen, clickStackR);
-                        clickStackR.setAmount(amtLeft);
-                        inv.setItem(e.getSlot(), clickStackR);
-                    }else return;
+                // Adds itself to the next available slot (targItem) and set remainder if there is one --- too lazy to finish as well
+                if(tIA + amtLeft <= clickStackE){
+                    clickStackR.setAmount(tIA + amtLeft);
+                    inv.setItem(nextOpen, clickStackR);
+                    inv.clear(e.getSlot());
+                }else if(tIA + amtLeft > clickStackE){
+                    amtLeft = tIA + amtLeft;
+                    clickStackR.setAmount(clickStackE);
+                    amtLeft -= clickStackE;
+                    inv.setItem(nextOpen, clickStackR);
+                    clickStackR.setAmount(amtLeft);
+                    inv.setItem(e.getSlot(), clickStackR);
+                }else return;
                 return;
             }
             return;
@@ -201,6 +216,7 @@ public class RegisterEvents implements Listener {
 
         ItemStack tarItem = inv.getItem(e.getSlot());
 
+        // Adds itself to the clicked area, sets what's in the cursor to what's left over.
         if(tarItem == null || tarItem.getType() == Material.AIR){
             tarItem = inItem.clone();
             if(inIAmt > maxStack){
@@ -233,21 +249,24 @@ public class RegisterEvents implements Listener {
         ItemStack item = itemIn.clone();
         item.setAmount(1);
 
+        // If the consumed item is a custom item then...
         if(ItemManager.FoodSaturation.containsKey(item)) {
             e.setCancelled(true);
             Player p = e.getPlayer();
             float playerSaturation = p.getSaturation();
             int playerHunger = p.getFoodLevel();
+            // Makes sure the player doesn't eat too much.
             if(playerHunger >= 20) return;
 
+            // Add food to player and saturation
             p.setFoodLevel(Math.min(playerHunger + ItemManager.FoodBars.get(item), 20));
             p.setSaturation(playerSaturation + ItemManager.FoodSaturation.get(item));
 
+            // If the consumed item grants an effect, grant it
             if(ItemManager.FoodEffect.containsKey(item))
                 p.addPotionEffects(ItemManager.FoodEffect.get(item));
 
-
-
+            // Subtraction
             itemIn.setAmount(itemIn.getAmount()-1);
         }
     }
