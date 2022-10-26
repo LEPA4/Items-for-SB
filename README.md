@@ -5,3 +5,5 @@ Note - All the code might change if I decide to use nms (if I figure it out), Th
 
 ## Other Stuff
 I am always happy to get help on projects. Create an issue or something: it's the only way I can think of RN.
+
+I'm also going to work on commenting code and writing documentation for it.
