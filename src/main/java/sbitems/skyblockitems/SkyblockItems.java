@@ -11,8 +11,8 @@ public final class SkyblockItems extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        ItemManager.init();
         getServer().getPluginManager().registerEvents(new RegisterEvents(), this);
+        ItemManager.init();
     }
 
     @Override

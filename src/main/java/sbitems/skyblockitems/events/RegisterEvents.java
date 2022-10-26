@@ -11,6 +11,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -21,12 +22,12 @@ import java.util.Objects;
 public class RegisterEvents implements Listener {
 
     @EventHandler
-    public static void PJ(PlayerJoinEvent e){
-        e.getPlayer().getInventory().addItem(ItemManager.CustomItems.get("Wand"));
+    public static void PlayerJoin(PlayerJoinEvent e){
+        e.getPlayer().getInventory().addItem(ItemManager.CustomItems.get("Bacon"));
     }
 
     @EventHandler
-    public static void PPUI(EntityPickupItemEvent e){
+    public static void PlayerPickupEvent(EntityPickupItemEvent e){
         if(!(e.getEntity() instanceof Player))return;
         Player p = (Player) e.getEntity();
 
@@ -38,7 +39,7 @@ public class RegisterEvents implements Listener {
         int leftAmt = inIAmt;
         ItemStack inItemRef = inItem.clone();
         inItemRef.setAmount(1);
-        if(!ItemManager.CustomItemsName.containsKey(inItemRef)) return;
+        if(!ItemManager.CustomItemsStackSize.containsKey(inItemRef)) return;
         Integer maxStack = ItemManager.CustomItemsStackSize.get(inItemRef);
 
         boolean hadOne = p.getInventory().contains(inItem);
@@ -123,7 +124,7 @@ public class RegisterEvents implements Listener {
     }
 
     @EventHandler (priority = EventPriority.HIGHEST)
-    public static void PID (InventoryDragEvent e){
+    public static void PlayerInventoryDrag (InventoryDragEvent e){
         if(e.getWhoClicked().getGameMode() == GameMode.CREATIVE) return;
 
         ItemStack inItem = e.getOldCursor();
@@ -134,7 +135,7 @@ public class RegisterEvents implements Listener {
     }
 
     @EventHandler (priority = EventPriority.HIGH)
-    public static void PII (InventoryClickEvent e){
+    public static void PlayerInventoryClick (InventoryClickEvent e){
         Player p = (Player) e.getWhoClicked();
 
         Inventory inv = e.getClickedInventory();
@@ -223,5 +224,35 @@ public class RegisterEvents implements Listener {
         inv.setItem(e.getSlot(), tarItem);
         inItem.setAmount(inIAmt);
         e.getWhoClicked().setItemOnCursor(inItem);
+    }
+
+    @EventHandler
+    public static void PlayerConsume (PlayerItemConsumeEvent e){
+        e.getPlayer().sendMessage(ItemManager.FoodEffect.toString());
+
+        ItemStack itemIn = e.getPlayer().getInventory().getItemInMainHand();
+
+        ItemStack item = itemIn.clone();
+        item.setAmount(1);
+
+        if(ItemManager.FoodSaturation.containsKey(item)) {
+            e.setCancelled(true);
+            Player p = e.getPlayer();
+            float playerSaturation = p.getSaturation();
+            int playerHunger = p.getFoodLevel();
+            if(playerHunger >= 20) return;
+
+            p.setFoodLevel(Math.min(playerHunger + ItemManager.FoodBars.get(item), 20));
+            p.setSaturation(playerSaturation + ItemManager.FoodSaturation.get(item));
+
+            if(ItemManager.FoodEffect.containsKey(item)){
+                p.sendMessage("test");
+                p.sendMessage(ItemManager.FoodEffect.get(item).toString());
+                p.addPotionEffects(ItemManager.FoodEffect.get(item));
+            }
+
+
+            itemIn.setAmount(itemIn.getAmount()-1);
+        }
     }
 }
