@@ -6,13 +6,15 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import sbitems.skyblockitems.events.RegisterEvents;
 import sbitems.skyblockitems.items.ItemManager;
+import sbitems.skyblockitems.items.LunchBox;
 
 public final class SkyblockItems extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        // Registers the event handlers in RegisterEvents.java
+        // Registers the event handlers
         getServer().getPluginManager().registerEvents(new RegisterEvents(), this);
+        getServer().getPluginManager().registerEvents(new LunchBox(), this);
 
         // Basically reads and adds the items --> calls the class that calls the class that creates items.
         ItemManager.init();

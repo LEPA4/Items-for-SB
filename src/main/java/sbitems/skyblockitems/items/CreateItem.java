@@ -15,6 +15,8 @@ public class CreateItem {
         // Creates the item and returns it
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
+        assert meta != null;
+        meta.getDisplayName();
         meta.setDisplayName(ChatColor.WHITE + name);
         if(modelData != null)
             meta.setCustomModelData(modelData);

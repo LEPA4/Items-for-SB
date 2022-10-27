@@ -6,26 +6,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import sbitems.skyblockitems.items.ItemManager;
+import sbitems.skyblockitems.items.LunchBox;
 
 import java.util.Objects;
 
 public class RegisterEvents implements Listener {
-
-    @EventHandler
-    public static void PlayerJoin(PlayerJoinEvent e){
-        //Adds item to player inventory when they join
-        e.getPlayer().getInventory().addItem(ItemManager.CustomItems.get("Bacon"));
-    }
 
     @EventHandler
     public static void PlayerPickupEvent(EntityPickupItemEvent e){
@@ -269,5 +265,18 @@ public class RegisterEvents implements Listener {
             // Subtraction
             itemIn.setAmount(itemIn.getAmount()-1);
         }
+    }
+
+    @EventHandler
+    public static void PlayerClick (PlayerInteractEvent e){
+        if(e.getAction() == Action.LEFT_CLICK_AIR && e.getItem() != null)
+            if(e.getItem().isSimilar(ItemManager.CustomItems.get("Bacon")))
+                e.getPlayer().getInventory().addItem(ItemManager.CustomItems.get("Lunch Box"));
+
+        if((e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) && e.getItem() != null)
+            if(e.getItem().isSimilar(ItemManager.CustomItems.get("Lunch Box"))) {
+                e.setCancelled(true);
+                LunchBox.openLunchBoxGUI(e.getPlayer());
+            }
     }
 }
